@@ -3,7 +3,7 @@ package build
 import mill._, scalalib._
 import mill.define.ModuleRef
 
-object foo extends ScalaModule with NativeImageModule {
+object foo extends ScalaModule with NativeImageModule with JavaModule {
 
   def zincWorker = ModuleRef(ZincWorkerGraalvm)
 
@@ -12,6 +12,9 @@ object foo extends ScalaModule with NativeImageModule {
   }
 
   def scalaVersion = "2.13.11"
+  def ivyDeps = Agg(
+    ivy"org.scala-lang:scala-library:${scalaVersion}"
+  )
 }
 
 //// SNIPPET:END
