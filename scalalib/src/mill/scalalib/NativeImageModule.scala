@@ -34,11 +34,27 @@ trait NativeImageModule extends RunModule with WithZincWorker {
     val executableName =
       if (mill.main.client.Util.isWindows) "native-image.exe" else "native-image"
 
+    val classpath0 = nativeImageClasspath().iterator.map(_.path).mkString(java.io.File.pathSeparator)
+    println("$$$ Native Image Classpath:")
+    println(classpath0)
+    os.write(dest / "native-image-classpath.txt", classpath0)
+
+    val classpath = nativeImageClasspath().iterator.map(_.path).mkString(" ")
+    val manifestContent = s"""Manifest-Version: 1.0
+                             |Class-Path: $classpath
+                             |""".stripMargin
+    val manifestPath = dest / "META-INF" / "MANIFEST.MF"
+    os.makeDir.all(manifestPath / os.up)
+    os.write(manifestPath, manifestContent)
+
+    val pathingJar = dest / "classpath.jar"
+    os.proc("jar", "cfm", pathingJar, manifestPath).call()
+
     val command = Seq.newBuilder[String]
       .+=(nativeImageTool().path.toString)
       .++=(nativeImageOptions())
       .+=("-cp")
-      .+=(nativeImageClasspath().iterator.map(_.path).mkString(java.io.File.pathSeparator))
+      .+=(pathingJar.toString())
       .+=(finalMainClass())
       .+=(executableName)
       .result()

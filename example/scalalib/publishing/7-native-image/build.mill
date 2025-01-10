@@ -3,7 +3,7 @@ package build
 import mill._, scalalib._
 import mill.define.ModuleRef
 
-object foo extends ScalaModule with NativeImageModule with JavaModule {
+object foo extends ScalaModule with NativeImageModule {
 
   def zincWorker = ModuleRef(ZincWorkerGraalvm)
 
