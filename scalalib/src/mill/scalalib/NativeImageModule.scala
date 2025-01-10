@@ -44,8 +44,16 @@ trait NativeImageModule extends RunModule with WithZincWorker {
 //                             |Class-Path: $classpath
 //                             |""".stripMargin
 
+//    val classpathEntries = nativeImageClasspath().iterator.map(_.path.toString)
+//    val manifestClasspath = classpathEntries.grouped(3).map(_.mkString(" ")).mkString("\n Class-Path: ")
+
     val classpathEntries = nativeImageClasspath().iterator.map(_.path.toString)
-    val manifestClasspath = classpathEntries.grouped(3).map(_.mkString(" ")).mkString("\n Class-Path: ")
+    val manifestClasspath = classpathEntries.toList match {
+      case first :: rest =>
+        (first :: rest.map("  " + _)).mkString("\n")
+      case Nil => ""
+    }
+
     val manifestContent = s"""Manifest-Version: 1.0
                              |Class-Path: $manifestClasspath
                              |""".stripMargin
