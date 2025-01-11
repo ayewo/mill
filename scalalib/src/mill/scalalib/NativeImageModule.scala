@@ -32,12 +32,7 @@ trait NativeImageModule extends RunModule with WithZincWorker {
   def nativeImage: T[PathRef] = Task {
     val dest = T.dest
     val executableName = "native-image"
-
-//    val classpathEntries = nativeImageClasspath().iterator.map(_.path.toString)
-//    scala-library-2.13.11.jar
-//val scalajar = os.Path("C:\\Users\\runneradmin\\AppData\\Local\\Coursier\\cache\\v1\\https\\repo1.maven.org\\maven2\\org\\scala-lang\\scala-library\\2.13.11\\scala-library-2.13.11.jar")
-//    os.copy(scalajar, dest / "scala-library-2.13.11.jar")
-
+    // copy JARs into the native image folder
     val classpathEntries = nativeImageClasspath().iterator.map { entry =>
       val path = entry.path
       val filename = path.last
