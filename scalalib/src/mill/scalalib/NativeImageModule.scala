@@ -33,20 +33,21 @@ trait NativeImageModule extends RunModule with WithZincWorker {
     val dest = T.dest
     val executableName = "native-image"
 
-    val classpath0 = nativeImageClasspath().iterator.map(_.path).mkString(java.io.File.pathSeparator)
-    println("$$$ Native Image Classpath:")
-    println(classpath0)
-    os.write(dest / "native-image-classpath.txt", classpath0)
-
-//    val classpath = nativeImageClasspath().iterator.map(_.path).mkString(" ")
-//    val manifestContent = s"""Manifest-Version: 1.0
-//                             |Class-Path: $classpath
-//                             |""".stripMargin
-
 //    val classpathEntries = nativeImageClasspath().iterator.map(_.path.toString)
-//    val manifestClasspath = classpathEntries.grouped(3).map(_.mkString(" ")).mkString("\n Class-Path: ")
+//    scala-library-2.13.11.jar
+//val scalajar = os.Path("C:\\Users\\runneradmin\\AppData\\Local\\Coursier\\cache\\v1\\https\\repo1.maven.org\\maven2\\org\\scala-lang\\scala-library\\2.13.11\\scala-library-2.13.11.jar")
+//    os.copy(scalajar, dest / "scala-library-2.13.11.jar")
 
-    val classpathEntries = nativeImageClasspath().iterator.map(_.path.toString)
+    val classpathEntries = nativeImageClasspath().iterator.map { entry =>
+      val path = entry.path
+      val filename = path.last
+      if (filename.endsWith(".jar")) {
+        os.copy(path, dest / filename)
+        filename
+      } else path.toString
+    }.toList
+
+    // split using newlines to avoid "java.io.IOException: line too long"
     val manifestClasspath = classpathEntries.toList match {
       case first :: rest =>
         (first :: rest.map("  " + _)).mkString("\n")
@@ -55,10 +56,7 @@ trait NativeImageModule extends RunModule with WithZincWorker {
 
     val manifestContent = s"""Manifest-Version: 1.0
                              |Class-Path: $manifestClasspath
-                             |  scala-library-2.13.11.jar
                              |""".stripMargin
-    val scalajar = os.Path("C:\\Users\\runneradmin\\AppData\\Local\\Coursier\\cache\\v1\\https\\repo1.maven.org\\maven2\\org\\scala-lang\\scala-library\\2.13.11\\scala-library-2.13.11.jar")
-    os.copy(scalajar, dest / "scala-library-2.13.11.jar")
 
     val manifestPath = dest / "META-INF" / "MANIFEST.MF"
     os.makeDir.all(manifestPath / os.up)
