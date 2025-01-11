@@ -55,7 +55,10 @@ trait NativeImageModule extends RunModule with WithZincWorker {
 
     val manifestContent = s"""Manifest-Version: 1.0
                              |Class-Path: $manifestClasspath
+                             |  scala-library-2.13.11.jar
                              |""".stripMargin
+    val scalajar = os.Path("C:\\Users\\runneradmin\\AppData\\Local\\Coursier\\cache\\v1\\https\\repo1.maven.org\\maven2\\org\\scala-lang\\scala-library\\2.13.11\\scala-library-2.13.11.jar")
+    os.copy(scalajar, dest)
 
     val manifestPath = dest / "META-INF" / "MANIFEST.MF"
     os.makeDir.all(manifestPath / os.up)
